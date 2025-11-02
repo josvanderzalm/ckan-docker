@@ -93,6 +93,8 @@ services:
     restart: unless-stopped
     healthcheck:
       test: ["CMD", "wget", "-qO", "/dev/null", "http://localhost:8983/solr/"]
+    ports:
+      - "8983:8983"  # Expose Solr Admin UI
 
   redis:
     image: redis:${REDIS_VERSION}
@@ -101,7 +103,29 @@ services:
     restart: unless-stopped
     healthcheck:
       test: ["CMD", "redis-cli", "-e", "QUIT"]
-    
+
+  pgadmin:
+    image: dpage/pgadmin4:7
+    networks:
+      - dbnet
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@ckan.local
+      PGADMIN_DEFAULT_PASSWORD: admin
+    ports:
+      - "5050:80"
+    depends_on:
+      - db
+    restart: unless-stopped
+
+  mailhog:
+    image: mailhog/mailhog
+    networks:
+      - webnet
+    ports:
+      - "8025:8025"  # Web UI
+      - "1025:1025"  # SMTP
+    restart: unless-stopped
+
 networks:
   webnet:
   ckannet:
